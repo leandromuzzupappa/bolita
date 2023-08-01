@@ -3,7 +3,7 @@ import "./style.css";
 import {
   loadTexture,
   createShader,
-  /* enableAttribute, */
+  enableAttribute,
   loadImage,
 } from "./utils.js";
 
@@ -75,10 +75,10 @@ async function init() {
 
   // Create attribures
   // prettier-ignore
-  /* const positionLocation = enableAttribute(gl, program, "position", planeBuffer, 3, gl.FLOAT, false, 0, 0); */
+  enableAttribute(gl, program, "position", planeBuffer, 3, gl.FLOAT, false, 0, 0);
 
   // prettier-ignore
-  /* const uvLocation = enableAttribute(gl, program, "uv", uvBuffer, 2, gl.FLOAT, false, 0, 0); */
+  enableAttribute(gl, program, "uv", uvBuffer, 2, gl.FLOAT, false, 0, 0);
 
   // use the program
   gl.useProgram(program);
