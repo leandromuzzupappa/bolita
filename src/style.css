@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #1a1a1a;
+  height: 3000px;
+}
+
+canvas {
+  border: 0;
+  position: fixed;
+  inset: 0;
+}
