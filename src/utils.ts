@@ -25,45 +25,44 @@ export async function loadImage(src: string): Promise<HTMLImageElement> {
 
 export function loadTexture(
   gl: WebGLRenderingContext,
-  url: string
+  image: HTMLImageElement
 ): WebGLTexture | null {
-  console.log(url);
+  console.log(image);
 
   const texture = gl.createTexture();
-  const image = new Image();
 
-  image.onload = () => {
+  if (!image.complete) {
+    const imageElement = new Image();
+    imageElement.src = image.src;
+
+    imageElement.onload = () => {
+      setImageTexture(gl, imageElement, texture);
+    };
+
+    return texture;
+  }
+
+  function setImageTexture(
+    gl: WebGLRenderingContext,
+    image: HTMLImageElement,
+    texture: WebGLTexture | null
+  ) {
     // Src: MDN
-    // Bind the texture to the texture unit
     gl.bindTexture(gl.TEXTURE_2D, texture);
-
-    // Specify a 2D texture image
-    // texImage2D(target, level, internalformat, format, type, pixels)
-    // target - the target texture (TEXTURE_2D, TEXTURE_CUBE_MAP_POSITIVE_X, etc.)
-    // level - the level-of-detail number. Level 0 is the base image level. Level n is the nth mipmap reduction image
-    // internalformat - the number of color components in the texture
-    // format - the format of the texel data
-    // type - the data type of the texel data
-    // pixels - the texel data
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
     // Source: https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL
-    // WebGL1 has different requirements for power of 2 images
-    // vs. non power of 2 images so check if the image is a
-    // power of 2 in both dimensions.
     if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-      // Yes, it's a power of 2. Generate mips.
       gl.generateMipmap(gl.TEXTURE_2D);
     } else {
-      // No, it's not a power of 2. Turn off mips and set
-      // wrapping to clamp to edge
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     }
-  };
+  }
 
-  image.src = url;
+  setImageTexture(gl, image, texture);
+
   return texture;
 }
 
