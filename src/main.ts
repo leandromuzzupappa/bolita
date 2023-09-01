@@ -1,11 +1,6 @@
 import "./style.css";
 
-import {
-  loadTexture,
-  createShader,
-  enableAttribute,
-  loadImage,
-} from "./utils.js";
+import { loadTexture, createShader, enableAttribute } from "./utils.js";
 
 import {
   vertexData,
