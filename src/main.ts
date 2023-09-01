@@ -15,21 +15,37 @@ import {
 } from "./webgl";
 
 const sequenceLength = 179;
-const sequenceImages = Object.values(
-  import.meta.glob("./assets/images/*.{png,jpg,jpeg,PNG,JPEG}", {
-    eager: true,
-    as: "url",
-  })
-).sort((a, b) => {
+
+let sequenceImages: HTMLImageElement[] = [];
+
+function setupImages() {
+  const imagesContainer = document.createElement("div");
+  imagesContainer.classList.add("images-container");
+
   const getNumber = (str: string) => {
     const match = str.match(/\d+/);
     return match ? parseInt(match[0]) : 0;
   };
 
-  return getNumber(a) - getNumber(b);
-});
+  sequenceImages = Object.values(
+    import.meta.glob("./assets/images/*.{png,jpg,jpeg,PNG,JPEG}", {
+      eager: true,
+      as: "url",
+    })
+  )
+    .sort((a, b) => getNumber(a) - getNumber(b))
+    .map((url) => {
+      const image = document.createElement("img");
+      image.src = url;
+      image.classList.add("image");
+      image.setAttribute("data-id", getNumber(url).toString());
+      imagesContainer.appendChild(image);
 
-console.log(sequenceImages);
+      return image;
+    });
+
+  document.body.appendChild(imagesContainer);
+}
 
 async function init() {
   const canvas = document.querySelector<HTMLCanvasElement>(".pepitos");
@@ -43,6 +59,8 @@ async function init() {
     throw new Error("WebGL not supported");
   }
 
+  setupImages();
+
   const planeBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, planeBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexData), gl.STATIC_DRAW);
@@ -52,12 +70,14 @@ async function init() {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvData), gl.STATIC_DRAW);
 
   const texture = gl.createTexture();
-  const image = await loadImage(sequenceImages[0]);
+  const image = sequenceImages[0];
 
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
   gl.generateMipmap(gl.TEXTURE_2D);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); // flip the image's y axis
+
+  loadTexture(gl, sequenceImages[0]);
 
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderData);
   const fragmentShader = createShader(
